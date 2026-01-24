@@ -61,14 +61,14 @@ const Shop = () => {
   return (
     <div className="pt-20 lg:pt-24 pb-16 min-h-screen">
       {/* Hero Banner */}
-      <section className="gradient-hero py-12 lg:py-20">
+      <section className="bg-primary py-12 lg:py-20">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center text-primary-foreground"
+            className="text-center"
           >
-            <h1 className="font-display text-4xl lg:text-6xl font-bold mb-4">Shop All Shoes</h1>
+            <h1 className="font-display text-4xl lg:text-6xl font-bold mb-4 text-primary-foreground">Shop All Shoes</h1>
             <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
               Discover our complete collection of premium footwear designed for every occasion
             </p>

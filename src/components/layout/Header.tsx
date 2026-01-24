@@ -38,7 +38,9 @@ export const Header = () => {
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'glass shadow-brand-md' : 'bg-transparent'
+        isScrolled 
+          ? 'bg-card shadow-brand-md border-b border-border' 
+          : 'bg-card/95 backdrop-blur-sm'
       }`}
     >
       <nav className="container mx-auto px-4 lg:px-8">
@@ -145,20 +147,44 @@ export const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMenuOpen && (
+      </nav>
+
+      {/* Mobile Navigation Drawer - Right Side */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed top-0 right-0 h-full w-72 bg-card border-l border-border z-50 lg:hidden shadow-lg"
             >
-              <div className="py-4 space-y-2">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <span className="font-display text-lg font-bold text-foreground">Menu</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-foreground hover:bg-secondary"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="p-4 space-y-2">
                 {navLinks.map((link, index) => (
                   <motion.div
                     key={link.path}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
@@ -176,9 +202,9 @@ export const Header = () => {
                 ))}
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+          </>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 };
