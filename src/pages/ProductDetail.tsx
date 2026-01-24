@@ -18,6 +18,7 @@ import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/products/ProductCard';
+import { ProductReviews } from '@/components/products/ProductReviews';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -367,6 +368,9 @@ const ProductDetail = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Product Reviews */}
+        <ProductReviews product={product} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

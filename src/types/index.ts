@@ -44,3 +44,14 @@ export interface FAQ {
   answer: string;
   category: string;
 }
+
+export interface Review {
+  id: string;
+  productId: string;
+  userName: string;
+  rating: number;
+  title: string;
+  text: string;
+  date: string;
+  verified: boolean;
+}
