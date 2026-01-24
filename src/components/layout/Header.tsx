@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, X, User, Sun, Moon, Search } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, Sun, Moon, Heart, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
+import { SearchBar } from '@/components/search/SearchBar';
 import logo from '@/assets/logo.png';
 
 const navLinks = [
@@ -16,9 +17,10 @@ const navLinks = [
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { cartCount, toggleCart, theme, toggleTheme, isAuthenticated } = useStore();
+  const { cartCount, toggleCart, theme, toggleTheme, isAuthenticated, wishlistCount } = useStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +32,7 @@ export const Header = () => {
 
   useEffect(() => {
     setIsMenuOpen(false);
+    setIsSearchOpen(false);
   }, [location]);
 
   return (
@@ -78,8 +81,23 @@ export const Header = () => {
             ))}
           </div>
 
+          {/* Desktop Search Bar */}
+          <div className="hidden lg:block flex-1 max-w-md mx-8">
+            <SearchBar />
+          </div>
+
           {/* Right Actions */}
-          <div className="flex items-center gap-2 lg:gap-4">
+          <div className="flex items-center gap-2 lg:gap-3">
+            {/* Mobile Search Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="lg:hidden text-foreground hover:bg-secondary"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
             <Button
               variant="ghost"
               size="icon"
@@ -111,6 +129,21 @@ export const Header = () => {
               </AnimatePresence>
             </Button>
 
+            <Link to="/wishlist">
+              <Button variant="ghost" size="icon" className="relative text-foreground hover:bg-secondary">
+                <Heart className="h-5 w-5" />
+                {wishlistCount() > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-white text-xs font-bold flex items-center justify-center"
+                  >
+                    {wishlistCount()}
+                  </motion.span>
+                )}
+              </Button>
+            </Link>
+
             <Link to={isAuthenticated ? '/account' : '/login'}>
               <Button variant="ghost" size="icon" className="text-foreground hover:bg-secondary">
                 <User className="h-5 w-5" />
@@ -128,7 +161,7 @@ export const Header = () => {
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center"
+                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center"
                 >
                   {cartCount()}
                 </motion.span>
@@ -147,6 +180,19 @@ export const Header = () => {
           </div>
         </div>
 
+        {/* Mobile Search Bar */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden pb-4"
+            >
+              <SearchBar onClose={() => setIsSearchOpen(false)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Mobile Navigation Drawer - Right Side */}
@@ -192,7 +238,7 @@ export const Header = () => {
                       to={link.path}
                       className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
                         location.pathname === link.path
-                          ? 'bg-accent text-accent-foreground'
+                          ? 'bg-accent text-white'
                           : 'text-foreground hover:bg-secondary'
                       }`}
                     >
@@ -200,6 +246,22 @@ export const Header = () => {
                     </Link>
                   </motion.div>
                 ))}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navLinks.length * 0.1 }}
+                >
+                  <Link
+                    to="/wishlist"
+                    className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
+                      location.pathname === '/wishlist'
+                        ? 'bg-accent text-white'
+                        : 'text-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    Wishlist ({wishlistCount()})
+                  </Link>
+                </motion.div>
               </div>
             </motion.div>
           </>

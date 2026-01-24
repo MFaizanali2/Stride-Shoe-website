@@ -5,7 +5,6 @@ import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStore } from '@/store/useStore';
-import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -13,14 +12,24 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const { addToCart, openCart } = useStore();
+  const { addToCart, openCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore();
+  const isLiked = isInWishlist(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product, product.sizes[0], product.colors[0]);
     openCart();
+  };
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLiked) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
   return (
@@ -45,27 +54,26 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             {/* Badges */}
             <div className="absolute top-4 left-4 flex flex-col gap-2">
               {product.new && (
-                <Badge className="bg-accent text-accent-foreground font-semibold">NEW</Badge>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent text-accent-foreground">
+                  NEW
+                </span>
               )}
               {product.originalPrice && (
-                <Badge variant="destructive" className="font-semibold">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-destructive text-destructive-foreground">
                   {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                </Badge>
+                </span>
               )}
             </div>
 
-            {/* Actions */}
+            {/* Wishlist Button */}
             <div className="absolute top-4 right-4">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsLiked(!isLiked);
-                }}
+                onClick={handleToggleWishlist}
                 className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors ${
                   isLiked
-                    ? 'bg-destructive text-destructive-foreground'
+                    ? 'bg-destructive text-white'
                     : 'bg-background/80 backdrop-blur-sm text-foreground hover:bg-background'
                 }`}
               >
@@ -80,11 +88,11 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             >
               <Button
-                className="w-full gap-2 shadow-lg"
+                className="w-full gap-2"
                 onClick={handleAddToCart}
               >
                 <ShoppingBag className="h-4 w-4" />
-                Quick Add
+                <span>Quick Add</span>
               </Button>
             </motion.div>
           </div>
@@ -110,7 +118,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">
               {product.brand}
             </p>
-            <h3 className="font-display font-semibold text-lg mb-2 group-hover:text-accent transition-colors">
+            <h3 className="font-display font-semibold text-lg text-foreground mb-2 group-hover:text-accent transition-colors">
               {product.name}
             </h3>
 

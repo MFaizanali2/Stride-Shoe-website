@@ -12,6 +12,13 @@ interface StoreState {
   cartTotal: () => number;
   cartCount: () => number;
 
+  // Wishlist
+  wishlist: Product[];
+  addToWishlist: (product: Product) => void;
+  removeFromWishlist: (productId: string) => void;
+  isInWishlist: (productId: string) => boolean;
+  wishlistCount: () => number;
+
   // Auth
   user: User | null;
   isAuthenticated: boolean;
@@ -88,6 +95,30 @@ export const useStore = create<StoreState>()(
         return get().cart.reduce((count, item) => count + item.quantity, 0);
       },
 
+      // Wishlist State
+      wishlist: [],
+
+      addToWishlist: (product) => {
+        const wishlist = get().wishlist;
+        if (!wishlist.find(item => item.id === product.id)) {
+          set({ wishlist: [...wishlist, product] });
+        }
+      },
+
+      removeFromWishlist: (productId) => {
+        set({
+          wishlist: get().wishlist.filter(item => item.id !== productId),
+        });
+      },
+
+      isInWishlist: (productId) => {
+        return get().wishlist.some(item => item.id === productId);
+      },
+
+      wishlistCount: () => {
+        return get().wishlist.length;
+      },
+
       // Auth State
       user: null,
       isAuthenticated: false,
@@ -146,6 +177,7 @@ export const useStore = create<StoreState>()(
       name: 'stride-store',
       partialize: (state) => ({
         cart: state.cart,
+        wishlist: state.wishlist,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         theme: state.theme,
