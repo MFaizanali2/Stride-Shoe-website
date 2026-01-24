@@ -5,7 +5,7 @@ import { CartItem, Product, User } from '@/types';
 interface StoreState {
   // Cart
   cart: CartItem[];
-  addToCart: (product: Product, size: number, color: string) => void;
+  addToCart: (product: Product, size: number, color: string, quantity?: number) => void;
   removeFromCart: (productId: string, size: number, color: string) => void;
   updateQuantity: (productId: string, size: number, color: string, quantity: number) => void;
   clearCart: () => void;
@@ -44,7 +44,7 @@ export const useStore = create<StoreState>()(
       // Cart State
       cart: [],
       
-      addToCart: (product, size, color) => {
+      addToCart: (product, size, color, quantity = 1) => {
         const cart = get().cart;
         const existingItem = cart.find(
           item => item.product.id === product.id && item.size === size && item.color === color
@@ -54,12 +54,12 @@ export const useStore = create<StoreState>()(
           set({
             cart: cart.map(item =>
               item.product.id === product.id && item.size === size && item.color === color
-                ? { ...item, quantity: item.quantity + 1 }
+                ? { ...item, quantity: item.quantity + quantity }
                 : item
             ),
           });
         } else {
-          set({ cart: [...cart, { product, quantity: 1, size, color }] });
+          set({ cart: [...cart, { product, quantity, size, color }] });
         }
       },
 
