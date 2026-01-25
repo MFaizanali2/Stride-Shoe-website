@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { CartDrawer } from '@/components/cart/CartDrawer';
+import { CompareFloatingBar } from '@/components/compare/CompareFloatingBar';
 
 export const Layout = () => {
   return (
@@ -12,6 +13,7 @@ export const Layout = () => {
       </main>
       <Footer />
       <CartDrawer />
+      <CompareFloatingBar />
     </div>
   );
 };

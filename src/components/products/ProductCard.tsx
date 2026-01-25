@@ -6,6 +6,7 @@ import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/store/useStore';
 import { QuickViewModal } from './QuickViewModal';
+import { CompareButton } from './CompareButton';
 
 interface ProductCardProps {
   product: Product;
@@ -74,8 +75,8 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 )}
               </div>
 
-              {/* Wishlist Button */}
-              <div className="absolute top-4 right-4">
+              {/* Wishlist & Compare Buttons */}
+              <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -88,6 +89,10 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 >
                   <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                 </motion.button>
+                <CompareButton
+                  product={product}
+                  className="h-10 w-10 rounded-full"
+                />
               </div>
 
               {/* Hover Actions */}

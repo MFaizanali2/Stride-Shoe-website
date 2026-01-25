@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const shippingSchema = z.object({
   firstName: z.string().trim().min(1, 'First name is required').max(50, 'Max 50 characters'),
@@ -38,6 +40,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { cart, cartTotal, clearCart } = useStore();
+  const { user } = useAuth();
   const [step, setStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
   const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -79,15 +82,55 @@ const Checkout = () => {
   };
 
   const onPaymentSubmit = async () => {
+    if (!shippingData) return;
+    
     setIsProcessing(true);
     
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
     
-    // Generate mock order number
+    // Generate order number
     const mockOrderNumber = `STR-${Date.now().toString(36).toUpperCase()}`;
-    setOrderNumber(mockOrderNumber);
     
+    // Save order to database if user is logged in
+    if (user) {
+      const orderItems = cart.map(item => ({
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          images: item.product.images,
+        },
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+      }));
+
+      const { error } = await supabase.from('orders').insert({
+        user_id: user.id,
+        order_number: mockOrderNumber,
+        status: 'processing',
+        items: orderItems,
+        subtotal: subtotal,
+        shipping: shipping,
+        tax: tax,
+        total: total,
+        shipping_address: {
+          firstName: shippingData.firstName,
+          lastName: shippingData.lastName,
+          address: shippingData.address,
+          city: shippingData.city,
+          state: shippingData.state,
+          zip: shippingData.zipCode,
+        },
+      });
+
+      if (error) {
+        console.error('Failed to save order:', error);
+      }
+    }
+    
+    setOrderNumber(mockOrderNumber);
     clearCart();
     setStep('confirmation');
     setIsProcessing(false);
