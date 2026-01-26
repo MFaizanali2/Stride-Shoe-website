@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, X, User, Sun, Moon, Heart, Search, BarChart3, LogOut, Package } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, Sun, Moon, Heart, Search, BarChart3, LogOut, Package, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
@@ -189,6 +189,12 @@ export const Header = () => {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <Settings className="h-4 w-4" />
+                      My Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/orders" className="flex items-center gap-2 cursor-pointer">
                       <Package className="h-4 w-4" />
                       Order History
@@ -338,22 +344,40 @@ export const Header = () => {
                   </Link>
                 </motion.div>
                 {user && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (navLinks.length + 2) * 0.1 }}
-                  >
-                    <Link
-                      to="/orders"
-                      className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
-                        location.pathname === '/orders'
-                          ? 'bg-accent text-white'
-                          : 'text-foreground hover:bg-secondary'
-                      }`}
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (navLinks.length + 2) * 0.1 }}
                     >
-                      Order History
-                    </Link>
-                  </motion.div>
+                      <Link
+                        to="/profile"
+                        className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
+                          location.pathname === '/profile'
+                            ? 'bg-accent text-white'
+                            : 'text-foreground hover:bg-secondary'
+                        }`}
+                      >
+                        My Profile
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (navLinks.length + 3) * 0.1 }}
+                    >
+                      <Link
+                        to="/orders"
+                        className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
+                          location.pathname === '/orders'
+                            ? 'bg-accent text-white'
+                            : 'text-foreground hover:bg-secondary'
+                        }`}
+                      >
+                        Order History
+                      </Link>
+                    </motion.div>
+                  </>
                 )}
               </div>
             </motion.div>

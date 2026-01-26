@@ -5,6 +5,7 @@ import { products } from '@/data/products';
 import { ProductCard } from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import FilterPanel from '@/components/shop/FilterPanel';
 
 const categories = [
   { id: 'all', name: 'All Products' },
@@ -23,11 +24,57 @@ const sortOptions = [
   { id: 'rating', name: 'Top Rated' },
 ];
 
+// Calculate max price for filter
+const maxProductPrice = Math.ceil(Math.max(...products.map(p => p.price)) / 10) * 10 + 50;
+
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
   const [gridCols, setGridCols] = useState<3 | 4>(4);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Filter states
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, maxProductPrice]);
+  const [minRating, setMinRating] = useState(0);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [onSale, setOnSale] = useState(false);
+  
+  // Applied filter states (only apply when user clicks Apply)
+  const [appliedFilters, setAppliedFilters] = useState({
+    priceRange: [0, maxProductPrice] as [number, number],
+    minRating: 0,
+    inStockOnly: false,
+    onSale: false,
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      priceRange,
+      minRating,
+      inStockOnly,
+      onSale,
+    });
+  };
+
+  const handleResetFilters = () => {
+    setPriceRange([0, maxProductPrice]);
+    setMinRating(0);
+    setInStockOnly(false);
+    setOnSale(false);
+    setAppliedFilters({
+      priceRange: [0, maxProductPrice],
+      minRating: 0,
+      inStockOnly: false,
+      onSale: false,
+    });
+  };
+
+  const activeFilterCount = [
+    appliedFilters.priceRange[0] > 0 || appliedFilters.priceRange[1] < maxProductPrice,
+    appliedFilters.minRating > 0,
+    appliedFilters.inStockOnly,
+    appliedFilters.onSale,
+  ].filter(Boolean).length;
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
@@ -35,6 +82,26 @@ const Shop = () => {
     // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter((p) => p.category === selectedCategory);
+    }
+
+    // Filter by price range
+    filtered = filtered.filter(
+      (p) => p.price >= appliedFilters.priceRange[0] && p.price <= appliedFilters.priceRange[1]
+    );
+
+    // Filter by rating
+    if (appliedFilters.minRating > 0) {
+      filtered = filtered.filter((p) => p.rating >= appliedFilters.minRating);
+    }
+
+    // Filter by stock
+    if (appliedFilters.inStockOnly) {
+      filtered = filtered.filter((p) => p.inStock);
+    }
+
+    // Filter by sale
+    if (appliedFilters.onSale) {
+      filtered = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price);
     }
 
     // Sort
@@ -56,7 +123,7 @@ const Shop = () => {
     }
 
     return filtered;
-  }, [selectedCategory, sortBy]);
+  }, [selectedCategory, sortBy, appliedFilters]);
 
   return (
     <div className="pt-20 lg:pt-24 pb-16 min-h-screen">
@@ -100,10 +167,15 @@ const Shop = () => {
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden gap-2"
+              className="gap-2"
             >
               <SlidersHorizontal className="h-4 w-4" />
               Filters
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center">
+                  {activeFilterCount}
+                </Badge>
+              )}
             </Button>
 
             <select
@@ -136,15 +208,66 @@ const Shop = () => {
         </div>
 
         {/* Active Filters */}
-        {selectedCategory !== 'all' && (
-          <div className="flex items-center gap-2 mb-6">
+        {(selectedCategory !== 'all' || activeFilterCount > 0) && (
+          <div className="flex flex-wrap items-center gap-2 mb-6">
             <span className="text-sm text-muted-foreground">Active filters:</span>
-            <Badge variant="secondary" className="gap-1">
-              {categories.find((c) => c.id === selectedCategory)?.name}
-              <button onClick={() => setSelectedCategory('all')}>
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
+            {selectedCategory !== 'all' && (
+              <Badge variant="secondary" className="gap-1">
+                {categories.find((c) => c.id === selectedCategory)?.name}
+                <button onClick={() => setSelectedCategory('all')}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {(appliedFilters.priceRange[0] > 0 || appliedFilters.priceRange[1] < maxProductPrice) && (
+              <Badge variant="secondary" className="gap-1">
+                ${appliedFilters.priceRange[0]} - ${appliedFilters.priceRange[1]}
+                <button onClick={() => {
+                  setPriceRange([0, maxProductPrice]);
+                  setAppliedFilters(prev => ({ ...prev, priceRange: [0, maxProductPrice] }));
+                }}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {appliedFilters.minRating > 0 && (
+              <Badge variant="secondary" className="gap-1">
+                {appliedFilters.minRating}+ stars
+                <button onClick={() => {
+                  setMinRating(0);
+                  setAppliedFilters(prev => ({ ...prev, minRating: 0 }));
+                }}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {appliedFilters.inStockOnly && (
+              <Badge variant="secondary" className="gap-1">
+                In Stock
+                <button onClick={() => {
+                  setInStockOnly(false);
+                  setAppliedFilters(prev => ({ ...prev, inStockOnly: false }));
+                }}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {appliedFilters.onSale && (
+              <Badge variant="secondary" className="gap-1">
+                On Sale
+                <button onClick={() => {
+                  setOnSale(false);
+                  setAppliedFilters(prev => ({ ...prev, onSale: false }));
+                }}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {activeFilterCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={handleResetFilters} className="text-xs h-6">
+                Clear All
+              </Button>
+            )}
           </div>
         )}
 
@@ -152,6 +275,23 @@ const Shop = () => {
         <p className="text-muted-foreground mb-6">
           Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
         </p>
+
+        {/* Filter Panel */}
+        <FilterPanel
+          isOpen={showFilters}
+          onClose={() => setShowFilters(false)}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          minRating={minRating}
+          setMinRating={setMinRating}
+          inStockOnly={inStockOnly}
+          setInStockOnly={setInStockOnly}
+          onSale={onSale}
+          setOnSale={setOnSale}
+          maxPrice={maxProductPrice}
+          onApply={handleApplyFilters}
+          onReset={handleResetFilters}
+        />
 
         {/* Products Grid */}
         <motion.div
@@ -182,9 +322,9 @@ const Shop = () => {
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <p className="text-xl text-muted-foreground">No products found in this category.</p>
-            <Button className="mt-4" onClick={() => setSelectedCategory('all')}>
-              View All Products
+            <p className="text-xl text-muted-foreground">No products found matching your filters.</p>
+            <Button className="mt-4" onClick={handleResetFilters}>
+              Clear Filters
             </Button>
           </motion.div>
         )}

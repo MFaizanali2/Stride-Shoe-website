@@ -92,20 +92,20 @@ const Checkout = () => {
     // Generate order number
     const mockOrderNumber = `STR-${Date.now().toString(36).toUpperCase()}`;
     
+    const orderItems = cart.map(item => ({
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        price: item.product.price,
+        images: item.product.images,
+      },
+      quantity: item.quantity,
+      size: item.size,
+      color: item.color,
+    }));
+
     // Save order to database if user is logged in
     if (user) {
-      const orderItems = cart.map(item => ({
-        product: {
-          id: item.product.id,
-          name: item.product.name,
-          price: item.product.price,
-          images: item.product.images,
-        },
-        quantity: item.quantity,
-        size: item.size,
-        color: item.color,
-      }));
-
       const { error } = await supabase.from('orders').insert({
         user_id: user.id,
         order_number: mockOrderNumber,
@@ -121,13 +121,45 @@ const Checkout = () => {
           address: shippingData.address,
           city: shippingData.city,
           state: shippingData.state,
-          zip: shippingData.zipCode,
+          zipCode: shippingData.zipCode,
+          country: shippingData.country,
         },
       });
 
       if (error) {
         console.error('Failed to save order:', error);
       }
+    }
+
+    // Send order confirmation email
+    try {
+      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          email: shippingData.email,
+          orderNumber: mockOrderNumber,
+          customerName: `${shippingData.firstName} ${shippingData.lastName}`,
+          items: orderItems,
+          subtotal,
+          shipping,
+          tax,
+          total,
+          shippingAddress: {
+            firstName: shippingData.firstName,
+            lastName: shippingData.lastName,
+            address: shippingData.address,
+            city: shippingData.city,
+            state: shippingData.state,
+            zipCode: shippingData.zipCode,
+            country: shippingData.country,
+          },
+        },
+      });
+
+      if (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+      }
+    } catch (err) {
+      console.error('Email sending error:', err);
     }
     
     setOrderNumber(mockOrderNumber);
@@ -137,7 +169,7 @@ const Checkout = () => {
     
     toast({
       title: 'Order Placed Successfully!',
-      description: `Your order ${mockOrderNumber} has been confirmed.`,
+      description: `Your order ${mockOrderNumber} has been confirmed. A confirmation email has been sent.`,
     });
   };
 
