@@ -17,6 +17,7 @@ import Checkout from "./pages/Checkout";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
 import Testimonials from "./pages/Testimonials";
 import FAQ from "./pages/FAQ";
 import Compare from "./pages/Compare";
@@ -65,6 +66,7 @@ const App = () => (
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/compare" element={<Compare />} />
                 <Route path="/orders" element={<OrderHistory />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/faq" element={<FAQ />} />
               </Route>
