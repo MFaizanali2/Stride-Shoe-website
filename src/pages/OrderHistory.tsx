@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, ChevronRight, Clock, CheckCircle, Truck, XCircle } from 'lucide-react';
+import { Package, ChevronRight, Clock, CheckCircle, Truck, XCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderItem {
   product: {
@@ -51,9 +52,11 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
 const OrderHistory = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -76,6 +79,35 @@ const OrderHistory = () => {
       setOrders(data as unknown as Order[]);
     }
     setLoading(false);
+  };
+
+  const handleDeleteOrder = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeletingId(orderId);
+
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId);
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to remove order from history.',
+        variant: 'destructive',
+      });
+    } else {
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(null);
+      }
+      toast({
+        title: 'Order Removed',
+        description: 'The order has been removed from your history.',
+      });
+    }
+
+    setDeletingId(null);
   };
 
   if (authLoading || loading) {
@@ -185,9 +217,18 @@ const OrderHistory = () => {
                         {order.items.length} item{order.items.length > 1 ? 's' : ''}
                       </p>
                     </div>
-                    <div className="text-right">
+                  <div className="text-right">
                       <p className="font-semibold">${order.total.toFixed(2)}</p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => handleDeleteOrder(order.id, e)}
+                      disabled={deletingId === order.id}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </motion.div>

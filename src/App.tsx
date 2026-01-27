@@ -22,6 +22,10 @@ import Testimonials from "./pages/Testimonials";
 import FAQ from "./pages/FAQ";
 import Compare from "./pages/Compare";
 import OrderHistory from "./pages/OrderHistory";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,9 +73,13 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/faq" element={<FAQ />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
               </Route>
               <Route path="/login" element={<Auth />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/admin" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ThemeInitializer>
