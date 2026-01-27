@@ -21,7 +21,8 @@ const navLinks = [
   { name: 'Shop', path: '/shop' },
   { name: 'Men', path: '/category/men' },
   { name: 'Women', path: '/category/women' },
-  { name: 'Sneakers', path: '/category/sneakers' },
+  { name: 'About', path: '/about' },
+  { name: 'Contact', path: '/contact' },
 ];
 
 export const Header = () => {
