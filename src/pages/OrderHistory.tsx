@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, ChevronRight, Clock, CheckCircle, Truck, XCircle, Trash2 } from 'lucide-react';
+import { Package, ChevronRight, Clock, CheckCircle, Truck, XCircle, Trash2, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useOrderTracking } from '@/hooks/useOrderTracking';
 
 interface OrderItem {
   product: {
@@ -57,6 +58,21 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Realtime order status tracking
+  const handleOrderUpdate = useCallback((orderId: string, newStatus: string) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    );
+    // Update selected order if it's the one that changed
+    setSelectedOrder((prev) =>
+      prev?.id === orderId ? { ...prev, status: newStatus } : prev
+    );
+  }, []);
+
+  useOrderTracking(orders, handleOrderUpdate);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -155,9 +171,15 @@ const OrderHistory = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="font-display text-3xl font-bold">Order History</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-3xl font-bold">Order History</h1>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
+              <Bell className="h-3.5 w-3.5" />
+              <span>Live tracking</span>
+            </div>
+          </div>
           <p className="text-muted-foreground mt-2">
-            Track and manage your orders
+            Track and manage your orders • Status updates in real-time
           </p>
         </motion.div>
 
